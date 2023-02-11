@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 import torch
 from torch import nn
-from torchsnooper import snoop
 
 
 class BaseVAE(ABC, nn.Module):
@@ -36,13 +35,15 @@ class LinearVAE(BaseVAE):
     def reparameterize(self, mu, log_var):
         std = torch.exp(0.5 * log_var)
         eps = torch.randn_like(std)
-        return mu + eps * std
+        return mu + std * eps
 
     def decode(self, Z):
         return self.decoder(Z)
 
-    # @snoop
     def forward(self, X):
         mu, log_var = self.encode(X)
         Z = self.reparameterize(mu, log_var)
         return self.decode(Z), mu, log_var
+
+    def sample(self, Z):
+        return self.decode(Z)
